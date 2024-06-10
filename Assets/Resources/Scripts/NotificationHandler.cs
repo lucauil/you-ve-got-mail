@@ -24,7 +24,7 @@ public class NotificationHandler : MonoBehaviour
             DateTime lastNotificationTime = DateTime.FromBinary(Convert.ToInt64(PlayerPrefs.GetString(LAST_NOTIFICATION_TIME_KEY)));
             DateTime now = DateTime.Now;
 
-            if (now - lastNotificationTime < TimeSpan.FromMinutes(420))
+            if (now - lastNotificationTime < TimeSpan.FromHours(12))
             {
                 return;
             }
@@ -37,8 +37,8 @@ public class NotificationHandler : MonoBehaviour
 
         var notification = new AndroidNotification();
         notification.Title = "Check je mail!";
-        notification.Text = "Het is alweer 7 uur geleden dat jij je mail gecheckt hebt!";
-        notification.FireTime = System.DateTime.Now.AddMinutes(420);
+        notification.Text = "Het is alweer tijd om je mail checken!";
+        notification.FireTime = System.DateTime.Now.AddHours(12);
         AndroidNotificationCenter.SendNotification(notification, "channel_id");
 
         PlayerPrefs.SetString(LAST_NOTIFICATION_TIME_KEY, DateTime.Now.ToBinary().ToString());

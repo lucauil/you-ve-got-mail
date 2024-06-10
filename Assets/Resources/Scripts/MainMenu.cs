@@ -11,7 +11,7 @@ public class MainMenu : MonoBehaviour
 
     public void Start()
     {
-        SetButtonColor(SettingsBtn, new Color32(255,255,255,255));
+        SetButtonColor(GameBtn, new Color32(255,255,255,255));
     }
 
     public void OpenGame()
