@@ -7,7 +7,7 @@ using TMPro;
 public class MainMenu : MonoBehaviour
 {
     public GameObject ShopPanel, QuestsPanel, SettingsPanel, FoodPanel;
-    public GameObject GameBtn, ShopBtn, QuestsBtn, SettingsBtn;
+    public GameObject GameBtn, ShopBtn, QuestsBtn, SettingsBtn, Credit, Uitleg, Bscherm;
 
     public void Start()
     {
@@ -51,5 +51,36 @@ public class MainMenu : MonoBehaviour
     {
         button.GetComponentInChildren<Image>().color = color;
         button.GetComponentInChildren<TextMeshProUGUI>().color = color;
+    }
+
+    public void CreditOn()
+    {
+        Credit.SetActive(true);
+        
+    }
+
+    public void CreditOf()
+    {
+        Credit.SetActive(false);
+        
+    }
+
+    public void UitlegOn()
+    {
+        Uitleg.SetActive(true);
+        
+    }
+
+    public void UitlegOf()
+    {
+        Uitleg.SetActive(false);
+        
+    }
+
+    public void GoTo()
+    {
+        SetButtonColors(SettingsBtn, GameBtn, ShopBtn, QuestsBtn, new Color32(255,255,255,255));
+        Uitleg.SetActive(true);
+        Bscherm.SetActive(false);
     }
 }

@@ -16,6 +16,9 @@ public class Robot : MonoBehaviour
     [SerializeField]
     private string _name;
 
+    private int _daysOfZeroHappiness = 0;
+    private DateTime? _zeroHappinessStartDate = null;
+    private DateTime _lastUpdateTime;
     private bool _serverTime;
     private int _clickCount;
 
@@ -28,57 +31,99 @@ public class Robot : MonoBehaviour
 
     void Start()
     {
-        PlayerPrefs.SetString("then", "10/04/2023 05:00:00");
-        updateStatus();
+        LoadGameState(); // Ensure this is called at the start to load saved states including _lastUpdateTime
+
+        DateTime currentTime = DateTime.Now;
+        TimeSpan elapsedTime;
+
+        if (_lastUpdateTime!= default(DateTime))
+        {
+            elapsedTime = currentTime - _lastUpdateTime;
+        }
+        else
+        {
+            // Handle the case where _lastUpdateTime hasn't been set yet
+            elapsedTime = TimeSpan.Zero;
+        }
+
+        // Decrease hunger and happiness based on elapsed time
+        int hungerDecrease = (int)(elapsedTime.TotalHours * 2); // Example calculation
+        int happinessDecrease = (int)((99 - _hunger) * (elapsedTime.TotalHours * 10)); // Example calculation
+
+        _hunger -= hungerDecrease;
+        _happiness -= happinessDecrease;
+
+        // Ensure values stay within bounds
+        _hunger = Mathf.Max(_hunger, 0);
+        _happiness = Mathf.Max(_happiness, 0);
+
+        // Update _lastUpdateTime for the next cycle
+        _lastUpdateTime = currentTime;
+        SaveGameState(); // Immediately save the updated state including the new _lastUpdateTime
 
         if (PlayerPrefs.HasKey("name")) { _name = PlayerPrefs.GetString("name"); }
-        else { PlayerPrefs.SetString("name", "Robot"); _name = "Robot"; }
+        else { PlayerPrefs.SetString("name", "Robot"); _name = "geen naam"; }
 
-        if (PlayerPrefs.HasKey("coin")) { _coin = PlayerPrefs.GetInt("coin"); PlayerPrefs.SetInt("coin", 30); _coin = 30; }
-        else { PlayerPrefs.SetInt("coin", 30); _coin = 30; }
+        if (PlayerPrefs.HasKey("coin"))
+        {
+            _coin = PlayerPrefs.GetInt("coin");
+        }
+        else
+        {
+            _coin = 30; // Default value
+        }
 
-        if (PlayerPrefs.HasKey("hunger")) { _hunger = PlayerPrefs.GetInt("hunger"); }
-        else { PlayerPrefs.SetInt("hunger", 70); _hunger = 70; }
+        if (PlayerPrefs.HasKey("hunger"))
+        {
+            _hunger = PlayerPrefs.GetInt("hunger");
+        }
+        else
+        {
+            _hunger = 70; // Default value
+        }
 
-        if (PlayerPrefs.HasKey("happiness")) { _happiness = PlayerPrefs.GetInt("happiness"); }
-        else { PlayerPrefs.SetInt("happiness", 70); _happiness = 70; }   
+        // Repeat for other values
+
+        if (PlayerPrefs.HasKey("happiness"))
+        {
+            _happiness = PlayerPrefs.GetInt("happiness");
+        }
+        else
+        {
+            _happiness = 70; // Default value
+        }
     }
 
     void Update()
     {
+        PlayerPrefs.SetInt("hunger", _hunger);
+        PlayerPrefs.SetInt("happiness", _happiness);
+        PlayerPrefs.SetInt("coin", _coin);
+
     }
     
-    void updateStatus()
+    void UpdateStatus()
     {
-        TimeSpan ts = getTimeSpan();
+        DateTime currentTime = DateTime.Now;
+    }
+    
+    
 
-        if (!PlayerPrefs.HasKey("then"))
+    void SaveGameState()
+    {
+    PlayerPrefs.SetString("LastUpdateTime", _lastUpdateTime.ToString());
+    // Save other relevant states like hunger, happiness, etc.
+    }
+
+    void LoadGameState()
+    {
+        if (PlayerPrefs.HasKey("LastUpdateTime"))
         {
-            PlayerPrefs.SetString("then", GetStringTime());
-            _hunger -= (int)(ts.TotalHours * 2);
+            _lastUpdateTime = DateTime.Parse(PlayerPrefs.GetString("LastUpdateTime"));
         }
-        
-        _happiness -= (int)((99 - _hunger) * (ts.TotalHours * 10));
-
-        if (_hunger <= 0) { _hunger = 0; }
-
-        if (_happiness <= 0) { _happiness = 0; }
-
-       // if (_happiness == 0) 
-        //{
-         //   asielPanel.SetActive(true);
-         //   Person.SetActive(false);
-         //   aaiButton.SetActive(false);
-        //}
-
-        if (_serverTime) { updateServer(); }
-
-        else { InvokeRepeating("updateDevice", 0f, 30f); }
     }
 
-    void updateServer()
-    {
-    }
+
 
     void updateDevice()
     {
@@ -136,6 +181,7 @@ public class Robot : MonoBehaviour
         {
         happiness = 99;
         }
+        
     }
 
     public void UpdateHunger(int i)
@@ -162,16 +208,7 @@ public class Robot : MonoBehaviour
         }
     }
 
-    public void saveRobot()
-    {
-        if (!_serverTime)
-        {
-            updateDevice();
-            PlayerPrefs.SetInt("hunger", _hunger);
-            PlayerPrefs.SetInt("happiness", _happiness);
-            PlayerPrefs.SetInt("coin", _coin);
-        }
-    }
+    
 
     public void foodButton(int i)
     {
@@ -181,29 +218,32 @@ public class Robot : MonoBehaviour
             default:
             if (coin >= 5)
             {
-                UpdateHappiness(20);
+                
                 UpdateHunger(20);
                 Updatecoin(-5);
                 FoodPanel.SetActive(false);
+                SaveGameState();
             }
             break;
 
             case (1):
             if (coin >= 10)
             {
-                UpdateHappiness(35);
+                
                 UpdateHunger(40);
                 Updatecoin(-10);
                 FoodPanel.SetActive(false);
+                SaveGameState();
             }
             break;
 
             case (2):
             if (coin >= 15) {
-                UpdateHappiness(50);
+                
                 UpdateHunger(60);
                 Updatecoin(-15);
                 FoodPanel.SetActive(false);
+                SaveGameState();
             }
             break;
         }
@@ -216,6 +256,19 @@ public class Robot : MonoBehaviour
             case (0):
             default:
                 Updatecoin(10);
+                SaveGameState();
+            break;
+
+            case (1):
+           
+                Updatecoin(25);
+                SaveGameState();
+            break;
+
+            case (2):
+            
+                Updatecoin(50);
+                SaveGameState();
             break;
         }
     }
@@ -232,6 +285,7 @@ public class Robot : MonoBehaviour
                 asielPanel.SetActive(false);
                 Person.SetActive(true);
                 aaiButton.SetActive(true);
+                SaveGameState();
             }
             break;
         }
@@ -246,7 +300,7 @@ public class Robot : MonoBehaviour
             case 0:
             default:
                 UpdateHappiness(5);
-                Updatecoin(1);
+                
                 Person.transform.position = new Vector3(-0.23f, 0f, -9.012836f);
                 aaiCount++;
                 if (aaiCount >= 15)
@@ -254,6 +308,7 @@ public class Robot : MonoBehaviour
                     Person.transform.Rotate(0f, 180f, 0f);
                     aaiCount = 0;
                 }
+                SaveGameState();
             break;
         }
     }
@@ -271,8 +326,6 @@ public class Robot : MonoBehaviour
                 mailButton.SetActive(true);
         });
     }
-
-    
 
 
 }
